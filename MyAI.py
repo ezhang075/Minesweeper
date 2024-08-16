@@ -149,20 +149,27 @@ class MyAI( AI ):
 			
 
 		# checks the var assignments with the board
-		def checkVarAssignment(v):
+		# v - the tile being verified, coordinates
+		# value - int, 0 or 1
+		# currWorld - the current assignment in backtrack
+		def checkVarAssignment(v, value, currWorld):
 			for c in self.C_v[v] :
-				u = 0
+				u = 0 #assigned neighbors of c
 				mine_count = 0
-				for neighbor in self.V_c[c] :
-					if neighbor.value == None :
+				for c_neighbor in self.V_c[c] :
+					if currWorld.get(c_neighbor) == None :
+						#if the nieghbor is not present, it has no assigned value
 						u+=1
-
-					if u == 1:
+					elif currWorld.get(c_neighbor) == 1:
 						mine_count += 1
-
-					if u == 0 :
-						continue
-
+					# if value is 0, do nothing
+				# c should have a label on the board
+				el = self.board[c] - u #effective label
+				if mine_count <= el <= mine_count+u :
+					continue
+				else :
+					return False #constraints violated
+			return True
 		
 		
 		# code for minimal AI 5x5

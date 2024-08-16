@@ -38,6 +38,9 @@ class MyAI( AI ):
 		# V are covered tiles next to an uncovered tile
 		self.V = []
 		self.C = []
+
+		self.V_c = {}
+		self.C_v = {}
 		
 		self.warnings = []
 		self._numOfWarnings = 0
@@ -152,7 +155,7 @@ class MyAI( AI ):
 		# v - the tile being verified, coordinates
 		# value - int, 0 or 1
 		# currWorld - the current assignment in backtrack
-		def checkVarAssignment(v, value, currWorld):
+		def checkVarAssignment(self, v, value, currWorld):
 			for c in self.C_v[v] :
 				u = 0 #assigned neighbors of c
 				mine_count = 0
@@ -170,6 +173,18 @@ class MyAI( AI ):
 				else :
 					return False #constraints violated
 			return True
+		
+		# recurses via backtracking to find a valid, full assignment
+		def backtracking(self, currWorld):
+			if len(currWorld) == len(self.V):
+				# add current world to some instance variable for storage
+				return
+			v = self.V[len(currWorld)] #takes next unassigned tile
+			for i in range(0,1) : #checks validity of values 0 and 1
+				if checkVarAssignment(v, i, currWorld) :
+					currWorld[v] = i
+					self.backtracking(currWorld)
+					currWorld.pop(v)
 		
 		
 		# code for minimal AI 5x5

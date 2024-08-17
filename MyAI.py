@@ -51,6 +51,7 @@ class MyAI( AI ):
 
 		self._numberOfUncoveredTiles = 0
 		self._flags = False
+		self._flagged_tiles = []
 
 		self._recentX = startX
 		self._recentY = startY
@@ -127,6 +128,12 @@ class MyAI( AI ):
 
 		# advanced algorithm: add tiles into V and C, also computes C(v) and V(c)
 		def advanced_add_frontier(self):
+			# clear the V, C, V(c), and C(v) lists
+			self.V.clear()
+			self.C.clear()
+			self.V_c.clear()
+			self.C_v.clear()
+			
 			for x in range(self._rowDimension):
 				for y in range(self._colDimension):
 					if self.board[x][y] == 'x':
@@ -214,7 +221,18 @@ class MyAI( AI ):
 				tile = self.safeTiles.pop()
 				self._recentX = tile[0]
 				self._recentY = tile[1]
+				# added the line to append the tile to uncovered set
+				self.uncovered.append((self._recentX, self._recentY))
 				return Action(AI.Action.UNCOVER, tile[0], tile[1])
+
+			# flag tiles that are believed to be mines
+			if self.warnings:
+				# pops the warnings, saves the coordinates, and flags
+				tile = self.warnings.pop()
+				self._recentX = tile[0]
+				self._recentY = tile[1]
+				self._flagged_tiles.append((self._recentX, self._recentY))
+				return Action(AI.Action.FLAG, tile[0], tile[1])
 			
 			# move randomly, if no safe moves can be made
 			for x in range(self._rowDimension):
@@ -227,6 +245,9 @@ class MyAI( AI ):
 						return Action(AI.Action.UNCOVER, x, y)
 					
 			return Action(AI.Action.LEAVE)
+
+
+		# Main Loop:
 
 		
 		########################################################################

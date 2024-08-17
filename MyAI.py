@@ -182,15 +182,16 @@ class MyAI( AI ):
 			return True
 		
 		# recurses via backtracking to find a valid, full assignment
-		def backtracking(self, currWorld):
+		def backtracking(self, currWorld, possibleBoards):
 			if len(currWorld) == len(self.V):
 				# add current world to some instance variable for storage
+				possibleBoards.append(currWorld)
 				return
 			v = self.V[len(currWorld)] #takes next unassigned tile
 			for i in range(0,1) : #checks validity of values 0 and 1
 				if checkVarAssignment(v, i, currWorld) :
 					currWorld[v] = i
-					self.backtracking(currWorld)
+					self.backtracking(currWorld, possibleBoards)
 					currWorld.pop(v)
 		
 		
@@ -247,8 +248,35 @@ class MyAI( AI ):
 			return Action(AI.Action.LEAVE)
 
 
-		# Main Loop:
+		# Main Loop for 8x8, 16x16:
+		else :
+			# update returned tile
+			self.board[self._recentX][self._recentY] = number
+			possibleBoards = []
+			self.advanced_add_frontier() # preprocess
+			currentBoard = self.C
+			self.backtracking(currentBoard, possibleBoards)
+			# check boards for most common marked mine, and mark it
 
+			# copied from minimal
+			# then find a safe tile and return an action
+			if self.safeTiles:
+				# pops the safe tile, saves the coordinates, and uncovers
+				tile = self.safeTiles.pop()
+				self._recentX = tile[0]
+				self._recentY = tile[1]
+				return Action(AI.Action.UNCOVER, tile[0], tile[1])
+			
+			# move randomly, if no safe moves can be made
+			for x in range(self._rowDimension):
+				for y in range(self._colDimension):
+					# if a spot is covered, uncover it
+					if self.board[x][y] == 'x' and (x,y) not in self.uncovered:
+						self.uncovered.add((x,y))
+						self._recentX = x
+						self._recentY = y
+						return Action(AI.Action.UNCOVER, x, y)
+			return Action(AI.Action.LEAVE)
 		
 		########################################################################
 		#							YOUR CODE ENDS							   #

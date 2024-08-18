@@ -263,7 +263,7 @@ class MyAI( AI ):
 			if self.board[self._recentX][self._recentY] == 'x':
 				self.board[self._recentX][self._recentY] = number
 			
-			if len(self.safeTiles) == 0 and len(self.warnings)==0 and len(self._flagged_tiles) != self._totalMines:
+			if len(self.safeTiles) == 0 and len(self.warnings)==0 and len(self._flagged_tiles) != self._totalMines and number != 0:
 				print("Processing")
 				# update returned tile
 				possibleBoards = []
@@ -276,12 +276,7 @@ class MyAI( AI ):
 				print("possibleBoards", possibleBoards)
 
 				mines, safe = boardChecker(possibleBoards)
-
-				# if self.board[self._recentX][self._recentY] != 0:
-				# 	mines, safe = boardChecker(possibleBoards)
-
-				# else:
-				# 	safe = 
+				
 				print("Possible mines " + str(len(mines)))
 				print("Possible safe " + str(len(safe)))
 				if len(safe) > 0 :
@@ -296,6 +291,14 @@ class MyAI( AI ):
 						highest_tile = key
 				if highest_tile != None :
 					self.warnings.append(highest_tile)
+
+			else:
+				safe = get_adjacent_tiles(self._recentX, self._recentY)
+				mines = []
+
+				for tile in safe:
+					self.safeTiles.add(tile)
+
 			print("Picking action")
 			# copied from minimal
 			# then find a safe tile and return an action

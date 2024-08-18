@@ -75,7 +75,6 @@ class MyAI( AI ):
 		
 		# gets all adjacent, in bound tiles to the coordinates
 		def get_adjacent_tiles( x, y):
-		def get_adjacent_tiles( x, y):
 			adjacentTiles = []
 			# Top Left
 			if x-1 >= 0 and y + 1 < self._rowDimension:
@@ -108,7 +107,6 @@ class MyAI( AI ):
 
 		# advanced algorithm: add tiles into V and C, also computes C(v) and V(c)
 		def advanced_add_frontier():
-		def advanced_add_frontier():
 			# clear the V, C, V(c), and C(v) lists
 			self.V.clear()
 			self.C.clear()
@@ -118,11 +116,8 @@ class MyAI( AI ):
 			for x in range(self._rowDimension):
 				for y in range(self._colDimension):
 					if self.board[x][y] == 'm':
-					if self.board[x][y] == 'm':
 						continue
 
-					if (x,y) in self.uncovered:
-						adjacentTiles = get_adjacent_tiles(x,y)
 					if (x,y) in self.uncovered:
 						adjacentTiles = get_adjacent_tiles(x,y)
 						for adj_x, adj_y in adjacentTiles:
@@ -144,10 +139,6 @@ class MyAI( AI ):
 			print("self.V_c", self.V_c)
 			print("self.c", self.C)
 			print("self.V", self.V)
-			print("self.C_v", self.C_v)
-			print("self.V_c", self.V_c)
-			print("self.c", self.C)
-			print("self.V", self.V)
 			
 
 		# checks the var assignments with the board
@@ -163,7 +154,6 @@ class MyAI( AI ):
 					if c_neighbor not in currWorld :
 						#if the neighbor is not present, it has no assigned value
 						u+=1
-					elif currWorld[c_neighbor] == 1:
 					elif currWorld[c_neighbor] == 1:
 						mine_count += 1
 					# if value is 0, do nothing
@@ -181,9 +171,7 @@ class MyAI( AI ):
 		
 		# recurses via backtracking to find a valid, full assignment
 		def backtracking(currWorld, possibleBoards):
-		def backtracking(currWorld, possibleBoards):
 			if len(currWorld) == len(self.V):
-				print("Backtracking base case")
 				print("Backtracking base case")
 				# add current world to some instance variable for storage
 				possibleBoards.append(currWorld)
@@ -194,29 +182,7 @@ class MyAI( AI ):
 				if checkVarAssignment(v, i, currWorld) :
 					currWorld[v] = i
 					backtracking(currWorld, possibleBoards)
-					backtracking(currWorld, possibleBoards)
 					currWorld.pop(v)
-		
-		# checks the boards 
-		def boardChecker(possibleBoards) :
-			# find most commonly marked tile to flag as mine
-			possibleMines = {}
-			possibleSafe = []
-			for board in possibleBoards:
-				for key, value in board.items() :
-					if value == 1:
-						if key in possibleMines:
-							# increment count by 1
-							possibleMines[key] += 1
-						else :
-							possibleMines[key] = 1
-						if key in possibleSafe :
-							possibleSafe.remove(key)
-					else :
-						possibleSafe.append(key)
-			print("Boardchecking finished")
-			return possibleMines, possibleSafe
-					
 		
 		# checks the boards 
 		def boardChecker(possibleBoards) :
@@ -326,7 +292,6 @@ class MyAI( AI ):
 			# copied from minimal
 			# then find a safe tile and return an action
 			print("Safe Tiles", self.safeTiles)
-			print("Safe Tiles", self.safeTiles)
 			if self.safeTiles:
 				# pops the safe tile, saves the coordinates, and uncovers
 				tile = self.safeTiles.pop()
@@ -334,32 +299,7 @@ class MyAI( AI ):
 				self._recentY = tile[1]
 				print("Uncovering")
 				self.uncovered.append((self._recentX, self._recentY))
-				print("Uncovering")
-				self.uncovered.append((self._recentX, self._recentY))
 				return Action(AI.Action.UNCOVER, tile[0], tile[1])
-			print("Warnings", self.warnings)
-			if self.warnings:
-				# pops the warnings, saves the coordinates, and flags
-				tile = self.warnings.pop()
-				self._recentX = tile[0]
-				self._recentY = tile[1]
-				self.board[0][1] = 'm'
-				print("Flagging ")
-				self._flagged_tiles.append((self._recentX, self._recentY))
-				return Action(AI.Action.FLAG, tile[0], tile[1])
-			
-			if len(self._flagged_tiles) == self._totalMines :
-				for x in range(self._rowDimension):
-					for y in range(self._colDimension):
-						# if a spot is covered, uncover it
-						if self.board[x][y] == 'x' and (x,y) not in self.uncovered:
-							self._recentX = x
-							self._recentY = y
-							self.uncovered.append((self._recentX, self._recentY))
-							print("Random uncovering ")
-							return Action(AI.Action.UNCOVER, x, y)
-		print("Leaving")
-		return Action(AI.Action.LEAVE)
 			print("Warnings", self.warnings)
 			if self.warnings:
 				# pops the warnings, saves the coordinates, and flags

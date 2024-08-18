@@ -93,7 +93,7 @@ class MyAI( AI ):
 				adjacentTiles.append((x+1,y))
 			# Bottom Left
 			if x-1 >= 0 and y - 1 >= 0:
-				adjacentTiles.append([x-1, y-1])
+				adjacentTiles.append((x-1, y-1))
 			# Bottom Middle
 			if y - 1 >= 0:
 				adjacentTiles.append((x, y-1))
@@ -135,10 +135,10 @@ class MyAI( AI ):
 									self.C_v[(adj_x, adj_y)].append((x,y))
 
 			self.V.sort(key=lambda v:len(self.C_v[v]))
-			print("self.C_v", self.C_v)
+			""" print("self.C_v", self.C_v)
 			print("self.V_c", self.V_c)
 			print("self.c", self.C)
-			print("self.V", self.V)
+			print("self.V", self.V) """
 			
 
 		# checks the var assignments with the board
@@ -160,10 +160,10 @@ class MyAI( AI ):
 				# c should have a label on the board
 				if value == 1:
 					mine_count+=1
-				el = self.board[c[0]][c[1]] - u if self.board[c[0]][c[1]] != 0 else 0 #effective label
+				el = self.board[c[0]][c[1]] - u if self.board[c[0]][c[1]] - u > 0 else 0 #effective label
 				print(f"Tile {c} has clue: {self.board[c[0]][c[1]]}, effective label: {el}, u: {u}, mine_count: {mine_count}")
 				if not(mine_count <= el <= mine_count+u) :
-					print("Checking var: NO")
+					#print("Checking var: NO")
 					return False
 				print("Checking var: OK")
 			return True
@@ -174,7 +174,7 @@ class MyAI( AI ):
 			if len(currWorld) == len(self.V):
 				print("Backtracking base case")
 				# add current world to some instance variable for storage
-				possibleBoards.append(currWorld)
+				possibleBoards.append(currWorld.copy())
 				return
 			v = self.V[len(currWorld)] #takes next unassigned tile
 			print("v", v)
@@ -182,7 +182,6 @@ class MyAI( AI ):
 				if checkVarAssignment(v, i, currWorld) :
 					currWorld[v] = i
 					backtracking(currWorld, possibleBoards)
-					currWorld.pop(v)
 		
 		# checks the boards 
 		def boardChecker(possibleBoards) :
@@ -279,8 +278,9 @@ class MyAI( AI ):
 				
 				print("Possible mines " + str(len(mines)))
 				print("Possible safe " + str(len(safe)))
+
 				if len(safe) > 0 :
-					self.safeTiles.append(safe[-1]) #removes last safe tile
+					self.safeTiles.add(safe[0]) #removes safe tile
 				# loop through to find highest value key
 				highest_value = 0
 				highest_tile = None
@@ -292,12 +292,12 @@ class MyAI( AI ):
 				if highest_tile != None :
 					self.warnings.append(highest_tile)
 
-			else:
+			elif number == 0:
 				safe = get_adjacent_tiles(self._recentX, self._recentY)
-				mines = []
 
-				for tile in safe:
-					self.safeTiles.add(tile)
+				for tileX, tileY in safe:
+					if (tileX, tileY) not in self.uncovered :
+						self.safeTiles.add((tileX, tileY))
 
 			print("Picking action")
 			# copied from minimal
@@ -309,9 +309,9 @@ class MyAI( AI ):
 				self._recentX = tile[0]
 				self._recentY = tile[1]
 				print("Uncovering")
-				self.uncovered.append((self._recentX, self._recentY))
+				self.uncovered.add((self._recentX, self._recentY))
 				return Action(AI.Action.UNCOVER, tile[0], tile[1])
-			print("Warnings", self.warnings)
+			#print("Warnings", self.warnings)
 			if self.warnings:
 				# pops the warnings, saves the coordinates, and flags
 				tile = self.warnings.pop()
@@ -329,7 +329,7 @@ class MyAI( AI ):
 						if self.board[x][y] == 'x' and (x,y) not in self.uncovered:
 							self._recentX = x
 							self._recentY = y
-							self.uncovered.append((self._recentX, self._recentY))
+							self.uncovered.add((self._recentX, self._recentY))
 							print("Random uncovering ")
 							return Action(AI.Action.UNCOVER, x, y)
 		print("Leaving")

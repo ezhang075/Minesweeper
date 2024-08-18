@@ -86,7 +86,7 @@ class MyAI( AI ):
 			if x+1 < self._colDimension and y + 1 < self._rowDimension:
 				adjacentTiles.append((x+1, y+1))
 			# Middle Left
-			if x-1 < self._colDimension:
+			if 0 <= x-1 < self._colDimension:
 				adjacentTiles.append((x-1, y))
 			# Middle Right
 			if x+1 < self._colDimension:
@@ -273,7 +273,15 @@ class MyAI( AI ):
 				print("Number of possible boards: " + str(len(possibleBoards)))
 				print("Backtracking finished")
 				# check boards for most common marked mine+safe tile, and mark it
+				print("possibleBoards", possibleBoards)
+
 				mines, safe = boardChecker(possibleBoards)
+
+				# if self.board[self._recentX][self._recentY] != 0:
+				# 	mines, safe = boardChecker(possibleBoards)
+
+				# else:
+				# 	safe = 
 				print("Possible mines " + str(len(mines)))
 				print("Possible safe " + str(len(safe)))
 				if len(safe) > 0 :

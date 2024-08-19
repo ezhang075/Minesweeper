@@ -46,7 +46,7 @@ class MyAI( AI ):
 		self._numOfWarnings = 0
 
 		
-		self.uncovered = set([(startX, startY)])
+		self.uncovered = set([(startX, colDimension-startY-1)])
 		self.safeTiles = set()
 
 		self._numberOfUncoveredTiles = 0
@@ -54,9 +54,9 @@ class MyAI( AI ):
 		self._flagged_tiles = []
 
 		self._recentX = startX
-		self._recentY = startY
+		self._recentY = colDimension-startY-1
 		self.board = [['x' for _ in range(rowDimension)] for _ in range(colDimension)]
-		self.board[startX][startY] = 0
+		self.board[colDimension-startY-1][startX] = 0
 
 
 		pass
@@ -76,13 +76,13 @@ class MyAI( AI ):
 		# gets all adjacent, in bound tiles to the coordinates
 		def get_adjacent_tiles( x, y):
 			adjacentTiles = []
-			# Top Left
+			# bottom Left
 			if x-1 >= 0 and y + 1 < self._rowDimension:
 				adjacentTiles.append((x-1, y+1))
-			# Top Middle
+			# bottom Middle
 			if y + 1 < self._rowDimension:
 				adjacentTiles.append((x, y+1))
-			# Top Right
+			# bottom Right
 			if x+1 < self._colDimension and y + 1 < self._rowDimension:
 				adjacentTiles.append((x+1, y+1))
 			# Middle Left
@@ -91,13 +91,13 @@ class MyAI( AI ):
 			# Middle Right
 			if x+1 < self._colDimension:
 				adjacentTiles.append((x+1,y))
-			# Bottom Left
+			# top Left
 			if x-1 >= 0 and y - 1 >= 0:
 				adjacentTiles.append((x-1, y-1))
-			# Bottom Middle
+			# top Middle
 			if y - 1 >= 0:
 				adjacentTiles.append((x, y-1))
-			# Bottom Right
+			# top Right
 			if x + 1 < self._colDimension and y - 1 >= 0:
 				adjacentTiles.append((x+1, y-1))
 			return adjacentTiles
@@ -135,10 +135,10 @@ class MyAI( AI ):
 									self.C_v[(adj_x, adj_y)].append((x,y))
 
 			self.V.sort(key=lambda v:len(self.C_v[v]))
-			""" print("self.C_v", self.C_v)
+			print("self.C_v", self.C_v)
 			print("self.V_c", self.V_c)
 			print("self.c", self.C)
-			print("self.V", self.V) """
+			print("self.V", self.V)
 			
 
 		# checks the var assignments with the board
@@ -147,7 +147,7 @@ class MyAI( AI ):
 		# currWorld - the current assignment in backtrack
 		def checkVarAssignment(v, value, currWorld):
 			for c in self.C_v[v] :
-				print(c)
+				print("Checking ", c)
 				u = 0 #assigned neighbors of c
 				mine_count = 0
 				for c_neighbor in self.V_c[c] :
@@ -160,10 +160,10 @@ class MyAI( AI ):
 				# c should have a label on the board
 				if value == 1:
 					mine_count+=1
-				el = self.board[c[0]][c[1]] - u if self.board[c[0]][c[1]] - u > 0 else 0 #effective label
-				print(f"Tile {c} has clue: {self.board[c[0]][c[1]]}, effective label: {el}, u: {u}, mine_count: {mine_count}")
+				el = self.board[c[1]][c[0]] - u if self.board[c[1]][c[0]] - u > 0 else 0 #effective label
+				print(f"Tile {c} has clue: {self.board[c[1]][c[0]]}, effective label: {el}, u: {u}, mine_count: {mine_count}")
 				if not(mine_count <= el <= mine_count+u) :
-					#print("Checking var: NO")
+					print("Checking var: NO")
 					return False
 				print("Checking var: OK")
 			return True
@@ -172,12 +172,12 @@ class MyAI( AI ):
 		# recurses via backtracking to find a valid, full assignment
 		def backtracking(currWorld, possibleBoards):
 			if len(currWorld) == len(self.V):
-				print("Backtracking base case")
+				#print("Backtracking base case")
 				# add current world to some instance variable for storage
 				possibleBoards.append(currWorld.copy())
 				return
 			v = self.V[len(currWorld)] #takes next unassigned tile
-			print("v", v)
+			print("next unassigned tile ", v)
 			for i in [0,1] : #checks validity of values 0 and 1
 				if checkVarAssignment(v, i, currWorld) :
 					currWorld[v] = i
@@ -202,13 +202,12 @@ class MyAI( AI ):
 						possibleSafe.append(key)
 			print("Boardchecking finished")
 			return possibleMines, possibleSafe
-					
 		
 		# code for minimal AI 5x5
 		if self._rowDimension == 5 and self._colDimension == 5:
 			
 			# Update the returned value of tile
-			self.board[self._recentX][self._recentY] = number
+			self.board[self._recentY][self._recentX] = number
 
 			# iterate through board, finding safe tiles and adding them to the safeTiles set
 			for x in range(self._rowDimension):
@@ -220,7 +219,7 @@ class MyAI( AI ):
 							# the tile is 0, so we know the neighbors are safe
 							for (tileX, tileY) in adjacentTiles:
 								# if it is covered, add it to the sets if it has not been uncovered already
-								if self.board[tileX][tileY] == 'x' and 0 <= tileX < self._rowDimension and 0<= tileY < self._colDimension and (tileX, tileY) not in self.uncovered:
+								if self.board[tileY][tileX] == 'x' and 0 <= tileX < self._rowDimension and 0<= tileY < self._colDimension and (tileX, tileY) not in self.uncovered:
 									self.safeTiles.add((tileX, tileY))
 									self.uncovered.add((tileX, tileY))
 						# currently no check for if the tile is 1, ignores
@@ -259,47 +258,55 @@ class MyAI( AI ):
 
 		# Main Loop for 8x8, 16x16:
 		else :
-			if self.board[self._recentX][self._recentY] == 'x':
-				self.board[self._recentX][self._recentY] = number
+			if self.board[self._recentY][self._recentX] == 'x':
+				print("Tile number ", number)
+				self.board[self._recentY][self._recentX] = number
+
+			print("Current Board")
+			for i in range(self._rowDimension):
+				for j in range(self._colDimension):
+					print(self.board[i][j], end =" ")
+				print("\n")
 			
 			if len(self.safeTiles) == 0 and len(self.warnings)==0 and len(self._flagged_tiles) != self._totalMines and number != 0:
-				print("Processing")
+				#print("Processing")
 				# update returned tile
 				possibleBoards = []
 				advanced_add_frontier() # preprocess
-				print("after advanced add frontier")
+				#print("after advanced add frontier")
 				backtracking({}, possibleBoards)
 				print("Number of possible boards: " + str(len(possibleBoards)))
-				print("Backtracking finished")
+				#print("Backtracking finished")
 				# check boards for most common marked mine+safe tile, and mark it
-				print("possibleBoards", possibleBoards)
+				#print("possibleBoards", possibleBoards)
 
 				mines, safe = boardChecker(possibleBoards)
 				
-				print("Possible mines " + str(len(mines)))
-				print("Possible safe " + str(len(safe)))
 
 				if len(safe) > 0 :
+					print("Possible safe ", safe[0])
 					self.safeTiles.add(safe[0]) #removes safe tile
 				# loop through to find highest value key
 				highest_value = 0
 				highest_tile = None
-				print("Highest_Value")
+				#print("Highest_Value")
 				for key, value in mines.items():
 					if value > highest_value:
 						highest_value = value
 						highest_tile = key
 				if highest_tile != None :
 					self.warnings.append(highest_tile)
+				print("Possible mines ", highest_tile)
 
 			elif number == 0:
+				print("Safe tile ", self._recentX, " ", self._recentY)
 				safe = get_adjacent_tiles(self._recentX, self._recentY)
 
 				for tileX, tileY in safe:
 					if (tileX, tileY) not in self.uncovered :
 						self.safeTiles.add((tileX, tileY))
 
-			print("Picking action")
+			#print("Picking action")
 			# copied from minimal
 			# then find a safe tile and return an action
 			print("Safe Tiles", self.safeTiles)
@@ -308,30 +315,30 @@ class MyAI( AI ):
 				tile = self.safeTiles.pop()
 				self._recentX = tile[0]
 				self._recentY = tile[1]
-				print("Uncovering")
-				self.uncovered.add((self._recentX, self._recentY))
-				return Action(AI.Action.UNCOVER, tile[0], tile[1])
+				print("Uncovering ", tile)
+				self.uncovered.add((tile[0], tile[1]))
+				return Action(AI.Action.UNCOVER, tile[0], self._colDimension-tile[1]-1)
 			#print("Warnings", self.warnings)
 			if self.warnings:
 				# pops the warnings, saves the coordinates, and flags
 				tile = self.warnings.pop()
 				self._recentX = tile[0]
 				self._recentY = tile[1]
-				self.board[0][1] = 'm'
-				print("Flagging ")
-				self._flagged_tiles.append((self._recentX, self._recentY))
-				return Action(AI.Action.FLAG, tile[0], tile[1])
+				self.board[tile[1]][tile[0]] = 'm'
+				print("Flagging ", tile)
+				self._flagged_tiles.append((tile[0], tile[1]))
+				return Action(AI.Action.FLAG, tile[0], self._colDimension-tile[1]-1)
 			
-			if len(self._flagged_tiles) == self._totalMines :
+			if not self.safeTiles :
 				for x in range(self._rowDimension):
 					for y in range(self._colDimension):
 						# if a spot is covered, uncover it
-						if self.board[x][y] == 'x' and (x,y) not in self.uncovered:
+						if self.board[x][y] == 'x' and (y,x) not in self.uncovered:
 							self._recentX = x
 							self._recentY = y
-							self.uncovered.add((self._recentX, self._recentY))
-							print("Random uncovering ")
-							return Action(AI.Action.UNCOVER, x, y)
+							self.uncovered.add((x, y))
+							print("Random uncovering ", x, " ", y)
+							return Action(AI.Action.UNCOVER, x, self._colDimension-y-1)
 		print("Leaving")
 		return Action(AI.Action.LEAVE)
 		

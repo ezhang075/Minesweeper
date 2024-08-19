@@ -153,6 +153,7 @@ class MyAI(AI):
 			self._recentX = tile[0]
 			self._recentY = tile[1]
 			self.uncovered.add((tile[0], tile[1]))
+			print("uncovering")
 			return Action(AI.Action.UNCOVER, tile[0], self._colDimension - tile[1] - 1)
 
 		if self.warnings:
@@ -161,6 +162,7 @@ class MyAI(AI):
 			self._recentY = tile[1]
 			self.board[tile[1]][tile[0]] = 'm'
 			self._flagged_tiles.add((tile[0], tile[1]))
+			print("flagging")
 			return Action(AI.Action.FLAG, tile[0], self._colDimension - tile[1] - 1)
 
 		for x in range(self._rowDimension):
@@ -176,6 +178,8 @@ class MyAI(AI):
 		
 	def getAction(self, number: int) -> "Action Object":
 		print(f"Uncovered tile: ({self._recentX}, {self._recentY}), Value: {number}")
+
+		# 5x5 minimal code
 		if self._rowDimension == 5 and self._colDimension == 5:
 			self.board[self._recentY][self._recentX] = number
 
@@ -191,7 +195,7 @@ class MyAI(AI):
 									print(f"Added safe tile: ({tileX}, {tileY})")
 
 			return self.revaluate_after_guess()
-
+		# Draft code
 		else:
 			if self.board[self._recentY][self._recentX] == 'x':
 				self.board[self._recentY][self._recentX] = number
@@ -227,23 +231,29 @@ class MyAI(AI):
 					print(f"Flagging potential mine: {highest_tile}")
 
 			elif number == 0:
+				# tile is 0, so all surrounding tiles are safe
 				safe = self.get_adjacent_tiles(self._recentX, self._recentY)
 				for tileX, tileY in safe:
 					if (tileX, tileY) not in self.uncovered:
 						self.safeTiles.add((tileX, tileY))
 						print(f"Safe tiles around 0: ({tileX}, {tileY})")
+			
+			# marks safe tiles
+			if self.safeTiles:
+				tile = self.safeTiles.pop()
+				self._recentX = tile[0]
+				self._recentY = tile[1]
+				self.uncovered.add((tile[0], tile[1]))
+				return Action(AI.Action.UNCOVER, tile[0], self._colDimension - tile[1] - 1)
 
-			print("Checking uncovered tiles with covered neighbors to mark mines.")
-			for x in range(self._rowDimension):
-				for y in range(self._colDimension):
-					if self.board[y][x] != 'x' and (x, y) in self.uncovered:
-						adjacentTiles = self.get_adjacent_tiles(x, y)
-						covered_neighbors = [(tileX, tileY) for (tileX, tileY) in adjacentTiles if self.board[tileY][tileX] == 'x']
-						if len(covered_neighbors) > 0 and len(covered_neighbors) == self.board[y][x]:
-							for (tileX, tileY) in covered_neighbors:
-								if (tileX, tileY) not in self.warnings:
-									self.warnings.add((tileX, tileY))
-									print(f"Marking tile ({tileX}, {tileY}) as a mine.")
+			# marks mines on the board
+			if self.warnings:
+				tile = self.warnings.pop()
+				self._recentX = tile[0]
+				self._recentY = tile[1]
+				self.board[tile[1]][tile[0]] = 'm'
+				self._flagged_tiles.add((tile[0], tile[1]))
+				return Action(AI.Action.FLAG, tile[0], self._colDimension - tile[1] - 1)
 
 			# If all mines have been flagged, uncover remaining safe tiles
 			if len(self._flagged_tiles) == self._totalMines:
@@ -256,6 +266,23 @@ class MyAI(AI):
 							self.uncovered.add((x, y))
 							print(f"Uncovering {x}, {self._colDimension - y - 1}")
 							return Action(AI.Action.UNCOVER, x, self._colDimension - y - 1)
+
+			# if all options have been exhausted, proceed with an educated guess
+
+			print("Checking uncovered tiles with covered neighbors to mark mines.")
+			for x in range(self._rowDimension):
+				for y in range(self._colDimension):
+					if self.board[y][x] != 'x' and (x, y) in self.uncovered:
+						adjacentTiles = self.get_adjacent_tiles(x, y)
+						covered_neighbors = [(tileX, tileY) for (tileX, tileY) in adjacentTiles if self.board[tileY][tileX] == 'x']
+						if len(covered_neighbors) > 0 and len(covered_neighbors) == self.board[y][x]:
+							for (tileX, tileY) in covered_neighbors:
+								if (tileX, tileY) not in self.warnings:
+									self.warnings.add((tileX, tileY))
+									print(f"Marking tile ({tileX}, {tileY}) as a mine.")
+									
+			print("Safe tiles: ", self.safeTiles)
+			print("Warning tiles: ", self.warnings)
 
 			return self.revaluate_after_guess()
 		

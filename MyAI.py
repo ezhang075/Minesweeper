@@ -47,7 +47,7 @@ class MyAI(AI):
 
 		self._recentX = self._startX
 		self._recentY = self._startY
-		self.board = [['x' for _ in range(rowDimension)] for _ in range(colDimension)]
+		self.board = [['x' for _ in range(colDimension)] for _ in range(rowDimension)]
 		self.board[self._recentX][self._recentY] = 0
 
 		# Initialize the missing attribute _flagged_tiles
@@ -192,15 +192,15 @@ class MyAI(AI):
 
 		# 5x5 minimal code
 		if self._rowDimension == 5 and self._colDimension == 5:
-			self.board[self._recentY][self._recentX] = number
+			self.board[self._recentX][self._recentY] = number
 
 			for x in range(self._rowDimension):
 				for y in range(self._colDimension):
-					if self.board[y][x] != 'x':
+					if self.board[x][y] != 'x':
 						adjacentTiles = self.get_adjacent_tiles(x, y)
-						if self.board[y][x] == 0:
+						if self.board[x][y] == 0:
 							for (tileX, tileY) in adjacentTiles:
-								if self.board[tileY][tileX] == 'x' and (tileX, tileY) not in self.uncovered:
+								if self.board[tileX][tileY] == 'x' and (tileX, tileY) not in self.uncovered:
 									self.safeTiles.add((tileX, tileY))
 									self.uncovered.add((tileX, tileY))
 
@@ -214,7 +214,7 @@ class MyAI(AI):
 			for i in range(self._rowDimension):
 				for j in range(self._colDimension):
 					print(self.board[i][j], end =" ")
-				print("\n")  """
+				print("\n") """
 
 			self.advanced_add_frontier()
 
